@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # Backend FastAPI Microservice
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "7860:7860"
+    environment:
+      - PORT=7860
+      - FRONTEND_URL=http://localhost:3000
+    volumes:
+      - ./backend:/app
+    restart: always
+
+  # Frontend Next.js Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:7860 # For client-side fetch from host machine
+      # Use http://backend:7860 for server-side fetch if needed
+    depends_on:
+      - backend
+    restart: always
