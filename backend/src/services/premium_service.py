@@ -1,56 +1,66 @@
+import joblib
+import pandas as pd
+import os
 from src.schemas.premium import PremiumCalculationRequest, PremiumCalculationResponse
+
+# Load model on startup
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models", "premium_model.pkl")
+model = None
+
+try:
+    model = joblib.load(MODEL_PATH)
+except Exception as e:
+    print(f"Error loading model: {e}")
 
 class PremiumService:
     @staticmethod
     def calculate_premium(request: PremiumCalculationRequest) -> PremiumCalculationResponse:
         """
-        Mock implementation of an XGBoost risk model for premium calculation.
+        Calculates dynamic premiums using the Random Forest model.
         """
-        base_premium = 50.0  # Base weekly premium ₹50
+        # Base Prices (requested by user)
+        BASE_PRICES = {
+            "basic": 29.0,
+            "standard": 59.0,
+            "pro": 99.0
+        }
 
-        risk_adjustment = 0.0
-        reasoning_points = []
-        discount_applied = False
+        if model is None:
+            # Fallback multiplier if model fails to load
+            multiplier = 1.0
+            message = "Premium calculated using baseline (Model unavailable)"
+        else:
+            # Prepare input data for the model
+            input_data = pd.DataFrame([{
+                "zone_risk_score": request.zone_risk_score,
+                "season": request.season,
+                "worker_tenure_months": request.worker_tenure_months,
+                "clean_claim_history": request.clean_claim_history
+            }])
+            
+            # Predict multiplier
+            try:
+                # Assuming model returns a multiplier or we can extract it from the prediction
+                prediction = model.predict(input_data)
+                multiplier = float(prediction[0])
+            except Exception as e:
+                print(f"Prediction error: {e}")
+                multiplier = 1.0
+            
+            # Determine message based on multiplier
+            if multiplier > 1.0:
+                reason = "Monsoon/High-Risk Surcharge applied" if request.season == 2 else "Risk Factor adjustment"
+                message = f"AI-Powered Pricing: {reason}"
+            elif multiplier < 1.0:
+                message = "AI-Powered Pricing: Low-Risk Discount applied!"
+            else:
+                message = "Standard AI rates applied."
 
-        # Heuristic 1: Traffic Levels
-        if request.traffic_level.lower() == "heavy":
-            risk_adjustment += 10.0
-            reasoning_points.append("High traffic congestion adds ₹10 risk.")
-        elif request.traffic_level.lower() == "low":
-            risk_adjustment -= 2.0
-            reasoning_points.append("Low traffic gives ₹2 discount.")
-            discount_applied = True
-
-        # Heuristic 2: Weather Conditions
-        weather = request.weather_condition.lower()
-        if weather in ["rain", "storm", "extreme_heat"]:
-            risk_adjustment += 15.0
-            reasoning_points.append(f"Adverse weather ({weather}) adds ₹15 risk.")
-
-        # Heuristic 3: Past Incidents
-        if request.past_incidents > 0:
-            penalty = min(request.past_incidents * 5.0, 20.0) # Cap penalty at ₹20
-            risk_adjustment += penalty
-            reasoning_points.append(f"{request.past_incidents} past incidents adds ₹{penalty} risk.")
-            discount_applied = False # Negate discount if incidents exist
-
-        # Heuristic 4: Zone risk (simulated)
-        if "high-risk" in request.zone.lower():
-            risk_adjustment += 8.0
-            reasoning_points.append("Zone flagged as high-risk by historical data (+₹8).")
-        elif "low-risk" in request.zone.lower() and discount_applied:
-            risk_adjustment -= 5.0
-            reasoning_points.append("Safe zone synergy gives extra ₹5 discount.")
-
-        final_premium = max(base_premium + risk_adjustment, 15.0) # Hard floor at ₹15
-
-        if not reasoning_points:
-            reasoning_points.append("Standard risk factors, no adjustments.")
-
+        # Calculate final prices
         return PremiumCalculationResponse(
-            base_premium=base_premium,
-            risk_adjustment=risk_adjustment,
-            final_premium=final_premium,
-            discount_applied=discount_applied,
-            reasoning=" | ".join(reasoning_points)
+            basic=round(BASE_PRICES["basic"] * multiplier),
+            standard=round(BASE_PRICES["standard"] * multiplier),
+            pro=round(BASE_PRICES["pro"] * multiplier),
+            multiplier=round(multiplier, 2),
+            message=message
         )

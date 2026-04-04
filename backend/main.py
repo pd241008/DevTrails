@@ -1,9 +1,19 @@
 import uvicorn
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from src.routes.health import route as health_route
 from src.routes import premium, triggers, claims
 
-app = FastAPI(title="FastAPI Microservice", description="Main orchestrator backend")
+app = FastAPI(title="GigShield API", description="Main orchestrator backend for GigShield")
+
+# Enable CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Register Routers
 app.include_router(health_route.router, prefix="/api/health", tags=["Health"])
