@@ -1,26 +1,90 @@
 @import "tailwindcss";
 
+@theme {
+  --color-brand-indigo: #6366f1;
+  --color-brand-emerald: #10b981;
+  --color-surface-900: #18181b;
+  --color-surface-950: #09090b;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #09090b;
+  --foreground: #fafafa;
+  --brand-indigo: #6366f1;
+  --brand-emerald: #10b981;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Premium Professional UI Utilities */
+.premium-card {
+  background: rgba(24, 24, 27, 0.4);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.premium-card:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+  background: rgba(24, 24, 27, 0.6);
+  transform: translateY(-2px);
+}
+
+.premium-button-primary {
+  background: linear-gradient(to right, #6366f1, #10b981);
+  color: white;
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 10px 20px -10px rgba(99, 102, 241, 0.5);
+}
+
+.premium-button-primary:hover {
+  filter: brightness(1.1);
+  transform: scale(1.02);
+}
+
+.premium-button-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.premium-button-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Glassmorphism Backgrounds */
+.glass-surface {
+  background: radial-gradient(circle at top left, rgba(99, 102, 241, 0.05), transparent 40%),
+              radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.05), transparent 40%);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }

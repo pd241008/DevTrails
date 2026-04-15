@@ -2,15 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Calendar, Activity, IndianRupee } from "lucide-react";
+import { Shield, LayoutDashboard, LogOut, RotateCcw, User as UserIcon, Briefcase, ShieldAlert } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 import DevPanel from "../../components/DevPanel";
 import PayoutModal from "../../components/PayoutModal";
-import { AnimatePresence, motion } from "framer-motion";
+import WorkerDashboard from "../../components/dashboard/WorkerDashboard";
+import InsurerDashboard from "../../components/dashboard/InsurerDashboard";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Dashboard() {
   const router = useRouter();
-  const { user, policyTier, payouts, isHydrated } = useAppContext();
+  const { user, payouts, isHydrated, logout, resetSimulation } = useAppContext();
   
   const [modalOpen, setModalOpen] = useState(false);
   const [currentTrigger, setCurrentTrigger] = useState({ event: "", amount: 0 });
@@ -26,103 +28,96 @@ export default function Dashboard() {
     setModalOpen(true);
   };
 
+  const handleLogout = () => {
+    logout();
+    router.push("/register");
+  };
+
   if (!user || !isHydrated) return null;
 
-  const totalPayout = payouts.reduce((acc, curr) => acc + curr.amount, 0);
-
   return (
-    <div className="min-h-screen bg-zinc-950 pb-24">
-      {/* Top Banner */}
-      <div className="border-b border-zinc-800 bg-zinc-900/50 p-6 backdrop-blur-lg">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-white">Welcome back, {user.name}</h1>
-            <p className="text-sm text-zinc-400">Operating in {user.zone} via {user.platform}</p>
-          </div>
-          <div className="flex items-center gap-3 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-2">
-            <ShieldCheck className="h-5 w-5 text-indigo-400" />
-            <span className="font-semibold text-indigo-300">{policyTier || "Uninsured"} Policy Active</span>
-          </div>
-        </div>
-      </div>
-
-      <main className="mx-auto mt-8 max-w-5xl space-y-6 px-6">
-        {/* Uninsured Prompt */}
-        {!policyTier && (
-          <div className="flex flex-col sm:flex-row items-center justify-between rounded-3xl border border-orange-500/30 bg-orange-500/10 p-6 shadow-lg shadow-orange-500/5">
+    <div className="min-h-screen bg-zinc-950 font-sans glass-surface selection:bg-indigo-500 selection:text-white">
+      {/* Professional Header */}
+      <header className="border-b border-zinc-800/50 bg-zinc-950/50 px-8 py-5 sticky top-0 z-40 backdrop-blur-2xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500 shadow-lg shadow-indigo-500/20">
+               <Shield className="h-6 w-6 text-white" />
+            </div>
             <div>
-              <h3 className="text-xl font-bold text-orange-400">You are currently uninsured!</h3>
-              <p className="mt-1 text-sm text-zinc-300">Protect your earnings against real-world disruptions. Get covered instantly for zero-touch payouts.</p>
+              <h1 className="text-lg font-extrabold tracking-tight text-white uppercase">
+                GigShield <span className="text-zinc-500 font-medium">// Core</span>
+              </h1>
+              <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 mr-1"></span>
+                Authorized Session: {user.role === 'admin' ? "Insurer_Root" : "Worker_Node"}
+              </div>
             </div>
-            <button 
-              onClick={() => router.push("/policy")} 
-              className="mt-4 sm:mt-0 whitespace-nowrap rounded-full bg-orange-500 px-6 py-3 font-bold text-black transition-all hover:bg-orange-400 hover:scale-105"
-            >
-              Select Coverage Plan
-            </button>
-          </div>
-        )}
-        {/* Active Status Overview */}
-        <div className="grid gap-6 md:grid-cols-3">
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-            <div className="flex items-center gap-3 text-emerald-400">
-              <Activity className="h-5 w-5" />
-              <span className="font-semibold">Live Oracle Status</span>
-            </div>
-            <div className="mt-4 text-3xl font-black text-white">Monitoring</div>
-            <p className="mt-1 text-sm text-zinc-500">Weather APIs connected successfully.</p>
           </div>
 
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6">
-            <div className="flex items-center gap-3 text-indigo-400">
-              <Calendar className="h-5 w-5" />
-              <span className="font-semibold">Days Covered</span>
-            </div>
-            <div className="mt-4 text-3xl font-black text-white">56 Days</div>
-            <p className="mt-1 text-sm text-zinc-500">Since Jan 2026</p>
-          </div>
+          <div className="flex items-center gap-4">
+             <div className="hidden lg:flex items-center gap-3 px-4 py-2 rounded-2xl bg-zinc-900/50 border border-zinc-800">
+                <div className="h-8 w-8 rounded-full bg-zinc-800 flex items-center justify-center">
+                    <UserIcon className="h-4 w-4 text-zinc-400" />
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-xs font-bold text-white leading-none">{user.name}</span>
+                    <span className="text-[10px] font-medium text-zinc-500 mt-1 uppercase tracking-tighter">{user.platform || "Platform Admin"}</span>
+                </div>
+             </div>
 
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-6 shadow-[0_0_40px_-10px_rgba(16,185,129,0.1)] relative overflow-hidden">
-             <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-emerald-500/10 blur-2xl"></div>
-            <div className="flex items-center gap-3 text-emerald-400">
-              <IndianRupee className="h-5 w-5" />
-              <span className="font-semibold">Total Payouts</span>
-            </div>
-            <div className="mt-4 text-4xl font-black text-white flex items-center">
-              ₹ {totalPayout}
-            </div>
+             <button 
+                onClick={handleLogout}
+                className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition-all"
+                title="Logout"
+             >
+                <LogOut className="h-5 w-5" />
+             </button>
           </div>
         </div>
+      </header>
 
-        {/* Ledger Section */}
-        <div className="mt-8 rounded-3xl border border-zinc-800 bg-zinc-900/50 p-6">
-          <h3 className="mb-4 text-lg font-semibold text-white">Payout Ledger</h3>
-          <div className="space-y-3">
-            <AnimatePresence>
-              {payouts.length === 0 ? (
-                <p className="text-sm italic text-zinc-500">No events triggered yet. You're having a smooth week!</p>
-              ) : (
-                payouts.map((payout, idx) => (
-                  <motion.div 
-                    key={idx}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between rounded-2xl border border-zinc-800 bg-zinc-950 p-4 transition-all hover:bg-zinc-900"
-                  >
-                    <div>
-                      <div className="font-medium text-white">{payout.title}</div>
-                      <div className="text-xs text-zinc-500 mt-1">{payout.time}</div>
-                    </div>
-                    <div className="mt-2 sm:mt-0 flex items-center gap-2 rounded-xl bg-emerald-500/10 px-3 py-1 text-emerald-400 text-lg font-bold border border-emerald-500/20">
-                      + ₹{payout.amount}
-                    </div>
-                  </motion.div>
-                ))
-              )}
-            </AnimatePresence>
-          </div>
+      <main className="mx-auto mt-12 max-w-7xl px-8 pb-32">
+        <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-400 mb-2">
+                    <LayoutDashboard className="h-3 w-3" />
+                    Management Console
+                </div>
+                <h2 className="text-3xl font-black text-white tracking-tight">
+                    {user.role === 'admin' ? "Risk & Loss Evaluation" : "Earnings Protection Dashboard"}
+                </h2>
+            </div>
+            
+            <div className="flex items-center gap-3">
+                <button 
+                    onClick={resetSimulation}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-zinc-900 border border-zinc-800 text-xs font-bold uppercase tracking-wider text-zinc-400 hover:bg-zinc-800 hover:text-white transition-all"
+                >
+                    <RotateCcw className="h-4 w-4" />
+                    Reset Simulation
+                </button>
+                <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-xs font-bold uppercase tracking-wider text-indigo-400">
+                    {user.role === 'admin' ? <ShieldAlert className="h-4 w-4" /> : <Briefcase className="h-4 w-4" />}
+                    SECURE_{(user.role || 'WORKER').toUpperCase()}
+                </div>
+            </div>
         </div>
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={user.role}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            {user.role === 'admin' ? (
+              <InsurerDashboard />
+            ) : (
+              <WorkerDashboard user={user} payouts={payouts} />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Dev Overlays */}

@@ -1,22 +1,55 @@
 from src.schemas.claim import ClaimAssessmentRequest, ClaimAssessmentResponse
+from src.services.fraud_service import FraudService
+from src.services.payout_service import PayoutService
 
 class ClaimService:
-    GREEN_ROUTE_THRESHOLD = 80.0
+    # Thresholds for routing
+    CONFIDENCE_THRESHOLD = 85.0
+    PAYOUT_AMOUNT = 500.0 # Standard flat payout for demo disruptions (₹)
 
     @staticmethod
     def assess_claim(request: ClaimAssessmentRequest) -> ClaimAssessmentResponse:
         """
-        Implements the Fast Path Routing Logic.
+        Orchestrates the claim assessment with Fraud Detection and Instant Payouts.
         """
-        if request.evidence_score >= ClaimService.GREEN_ROUTE_THRESHOLD:
-            return ClaimAssessmentResponse(
-                status="approved",
-                routing_path="Green Route",
-                message=f"Claim fast-tracked for instant payout. High trust score ({request.evidence_score}/100)."
+        # 1. Run GPS Velocity Check
+        velocity_score = FraudService.check_gps_velocity(request.ping_history)
+        
+        # 2. Run Weather Verification
+        weather_score = FraudService.verify_weather(
+            request.lat, 
+            request.lon, 
+            request.timestamp, 
+            request.weather_condition
+        )
+        
+        # 3. Compute Combined Confidence Score
+        # Simple weighted average for demo
+        combined_score = (velocity_score * 0.4) + (weather_score * 0.6)
+        
+        status = "pending_review"
+        routing_path = "Yellow Route"
+        transaction_id = None
+        message = f"Confidence score: {combined_score:.1f}% (Velocity: {velocity_score}%, Weather: {weather_score}%). "
+        
+        if combined_score >= ClaimService.CONFIDENCE_THRESHOLD:
+            status = "approved"
+            routing_path = "Green Route"
+            
+            # Trigger Instant Payout
+            transaction_id = PayoutService.trigger_instant_payout(
+                request.worker_id, 
+                ClaimService.PAYOUT_AMOUNT
             )
+            
+            message += "Claim fast-tracked for instant payout via Stripe."
         else:
-            return ClaimAssessmentResponse(
-                status="pending_review",
-                routing_path="Yellow Route",
-                message=f"Claim flagged for Step-Up Challenge. Low trust/evidence score ({request.evidence_score}/100) triggered mitigation protocol."
-            )
+            message += "Claim flagged for manual verification due to low confidence."
+
+        return ClaimAssessmentResponse(
+            status=status,
+            confidence_score=combined_score,
+            routing_path=routing_path,
+            transaction_id=transaction_id,
+            message=message
+        )

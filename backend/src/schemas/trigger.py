@@ -3,7 +3,8 @@ from typing import Optional, Any
 
 class TriggerSimulationRequest(BaseModel):
     event_type: str = Field(..., description="Type of event (e.g., 'weather_heat', 'weather_rain', 'system_outage', 'traffic_spike')")
-    current_value: float = Field(..., description="The numerical indicator of the event severity (e.g., Temperature, Rainfall mm/hr, Outage duration in mins)")
+    current_value: float = Field(..., description="The numerical indicator of the event severity")
+    demo_mode: bool = Field(default=False, description="If true, triggers the full demo pipeline (5 mock workers)")
 
 class TriggerSimulationResponse(BaseModel):
     event_type: str = Field(..., description="Type of event evaluated")
