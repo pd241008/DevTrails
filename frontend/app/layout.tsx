@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "./context/AppContext";
+import Navbar from "../components/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GigShield - Intelligent Gig Worker Protection",
+  title: "ShiftSafeguard - Intelligent Gig Worker Protection",
   description: "AI-driven parametric insurance and real-time adjustments for the gig economy.",
 };
 
@@ -29,7 +30,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-zinc-950 text-white`}
       >
         <AppProvider>
-          {children}
+          <Navbar />
+          <div className="pt-20">
+            {children}
+          </div>
         </AppProvider>
       </body>
     </html>

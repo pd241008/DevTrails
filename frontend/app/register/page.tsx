@@ -39,7 +39,7 @@ export default function Register() {
           <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-tr from-indigo-500 to-emerald-500 shadow-2xl shadow-indigo-500/40">
             <ShieldCheck className="h-10 w-10 text-white" />
           </div>
-          <h1 className="text-4xl font-extrabold tracking-tight text-white">Project GigShield</h1>
+          <h1 className="text-4xl font-extrabold tracking-tight text-white">Project ShiftSafeguard</h1>
           <p className="mt-3 text-base text-zinc-400">Initialize your secure protection protocol.</p>
         </div>
 
