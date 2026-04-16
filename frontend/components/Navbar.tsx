@@ -3,7 +3,7 @@
 import { useAppContext } from "../app/context/AppContext";
 import { Shield, LayoutDashboard, FileText, BarChart3, LogOut, Bell, User as UserIcon } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import NotificationCenter from "./NotificationCenter";
@@ -12,6 +12,7 @@ export default function Navbar() {
   const { user, logout, notifications } = useAppContext();
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   if (!user) return null;
@@ -22,15 +23,20 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
     ...(user.role === 'worker' 
-      ? [{ label: "My Policy", href: "/policy", icon: FileText }]
+      ? [
+          { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
+          { label: "My Policy", href: "/policy", icon: FileText }
+        ]
       : [
+          { label: "Dashboard", href: "/dashboard?tab=kpi", icon: LayoutDashboard },
           { label: "Market Insights", href: "/dashboard?tab=forecast", icon: BarChart3 },
           { label: "Claims Review", href: "/dashboard?tab=claims", icon: Shield }
         ]
     )
   ];
+
+  const currentTab = searchParams.get('tab') || (user.role === 'admin' ? 'kpi' : '');
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-800/50 bg-zinc-950/50 px-8 py-3 backdrop-blur-2xl">
@@ -47,7 +53,9 @@ export default function Navbar() {
 
           <div className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => {
-              const active = pathname === link.href || (pathname === '/dashboard' && link.href.includes('tab') && false); // Simplified for now
+              const linkTab = new URLSearchParams(link.href.split('?')[1]).get('tab') || '';
+              const active = pathname === link.href.split('?')[0] && (linkTab === '' || linkTab === currentTab);
+              
               return (
                 <Link 
                   key={link.label}

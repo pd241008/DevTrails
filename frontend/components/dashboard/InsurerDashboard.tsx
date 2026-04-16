@@ -44,32 +44,7 @@ export default function InsurerDashboard({ activeTab: propActiveTab }: { activeT
 
   return (
     <div className="space-y-8">
-      {/* Tab Navigation */}
-      <div className="flex items-center gap-1 p-1 rounded-2xl bg-zinc-900/50 border border-zinc-800 w-fit">
-        {[
-          { id: 'kpi', label: 'Risk KPIs', icon: Info },
-          { id: 'forecast', label: 'Forecasts', icon: BarChart3 },
-          { id: 'claims', label: 'Claims', icon: Shield, count: pendingClaimsCount },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setTab(tab.id)}
-            className={`relative flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-              activeTab === tab.id 
-              ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20" 
-              : "text-zinc-500 hover:text-white"
-            }`}
-          >
-            <tab.icon className="h-3.5 w-3.5" />
-            {tab.label}
-            {tab.count !== undefined && tab.count > 0 && (
-                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[8px] font-bold text-white ml-1">
-                    {tab.count}
-                </span>
-            )}
-          </button>
-        ))}
-      </div>
+
 
       <AnimatePresence mode="wait">
         {activeTab === 'kpi' && (

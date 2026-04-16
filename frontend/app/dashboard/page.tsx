@@ -13,7 +13,7 @@ import { Loader2 } from "lucide-react";
 function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, payouts, claims, isHydrated, addNotification } = useAppContext();
+  const { user, payouts, claims, isHydrated, addNotification, addPayout } = useAppContext();
   
   // Tab Management for Insurer (Forecast vs Claims)
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "overview");
@@ -34,6 +34,13 @@ function DashboardContent() {
       title: "Atmospheric Surge Detected",
       message: `${event}. Risk models adjusted +15.5%.`,
       type: 'premium'
+    });
+
+    addPayout({
+      title: `SURGE_TRIGGERED: ${event}`,
+      amount: amount,
+      time: new Date().toLocaleTimeString(),
+      txId: `tx_surge_${Math.random().toString(36).substr(2, 6).toUpperCase()}`
     });
   };
 
@@ -67,38 +74,7 @@ function DashboardContent() {
             </p>
           </motion.div>
 
-          {user.role === 'admin' && (
-            <motion.div 
-               initial={{ opacity: 0, y: 10 }}
-               animate={{ opacity: 1, y: 0 }}
-               className="flex bg-zinc-900/50 p-1.5 rounded-2xl border border-zinc-800 backdrop-blur-md"
-            >
-                <button 
-                  onClick={() => setActiveTab("overview")}
-                  className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                    activeTab === 'overview' ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20" : "text-zinc-500 hover:text-white"
-                  }`}
-                >
-                  Market
-                </button>
-                <button 
-                  onClick={() => setActiveTab("forecast")}
-                  className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                    activeTab === 'forecast' ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20" : "text-zinc-500 hover:text-white"
-                  }`}
-                >
-                  Forecast
-                </button>
-                <button 
-                  onClick={() => setActiveTab("claims")}
-                  className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                    activeTab === 'claims' ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20" : "text-zinc-500 hover:text-white"
-                  }`}
-                >
-                  Underwriting
-                </button>
-            </motion.div>
-          )}
+
         </div>
 
         <AnimatePresence mode="wait">
