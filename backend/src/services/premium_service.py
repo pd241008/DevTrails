@@ -4,7 +4,7 @@ import os
 from src.schemas.premium import PremiumCalculationRequest, PremiumCalculationResponse
 
 # Load model on startup
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models", "premium_model.pkl")
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models", "gigshield_ensemble_v1.joblib")
 model = None
 
 try:

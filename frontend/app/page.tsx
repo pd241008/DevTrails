@@ -6,7 +6,7 @@ import { useAppContext } from "./context/AppContext";
 
 export default function RootPage() {
   const router = useRouter();
-  const { user, isHydrated } = useAppContext();
+  const { user, isHydrated, policyTier } = useAppContext();
 
   useEffect(() => {
     if (isHydrated) {
@@ -18,7 +18,7 @@ export default function RootPage() {
         router.push("/dashboard");
       }
     }
-  }, [user, isHydrated, router]);
+  }, [user, isHydrated, router, policyTier]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-950 font-sans">

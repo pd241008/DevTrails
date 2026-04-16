@@ -1,107 +1,104 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Shield, LayoutDashboard, LogOut, RotateCcw, User as UserIcon, Briefcase, ShieldAlert } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAppContext } from "../context/AppContext";
-import DevPanel from "../../components/DevPanel";
-import PayoutModal from "../../components/PayoutModal";
+import { motion, AnimatePresence } from "framer-motion";
+import Navbar from "../../components/Navbar";
 import WorkerDashboard from "../../components/dashboard/WorkerDashboard";
 import InsurerDashboard from "../../components/dashboard/InsurerDashboard";
-import { motion, AnimatePresence } from "framer-motion";
+import DevPanel from "../../components/DevPanel";
+import { Loader2 } from "lucide-react";
 
 export default function Dashboard() {
   const router = useRouter();
-  const { user, payouts, isHydrated, logout, resetSimulation } = useAppContext();
+  const searchParams = useSearchParams();
+  const { user, payouts, claims, isHydrated, addNotification } = useAppContext();
   
-  const [modalOpen, setModalOpen] = useState(false);
-  const [currentTrigger, setCurrentTrigger] = useState({ event: "", amount: 0 });
+  // Tab Management for Insurer (Forecast vs Claims)
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "overview");
 
   useEffect(() => {
     if (isHydrated && !user) {
       router.push("/register");
     }
-  }, [user, isHydrated, router]);
+  }, [isHydrated, user, router]);
 
-  const handleDevTrigger = (event: string, amount: number) => {
-    setCurrentTrigger({ event, amount });
-    setModalOpen(true);
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab) setActiveTab(tab);
+  }, [searchParams]);
+
+  const handleManualTrigger = (event: string, amount: number) => {
+    addNotification({
+      title: "Atmospheric Surge Detected",
+      message: `${event}. Risk models adjusted +15.5%.`,
+      type: 'premium'
+    });
   };
 
-  const handleLogout = () => {
-    logout();
-    router.push("/register");
-  };
-
-  if (!user || !isHydrated) return null;
+  if (!isHydrated || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-zinc-950">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-zinc-950 font-sans glass-surface selection:bg-indigo-500 selection:text-white">
-      {/* Professional Header */}
-      <header className="border-b border-zinc-800/50 bg-zinc-950/50 px-8 py-5 sticky top-0 z-40 backdrop-blur-2xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500 shadow-lg shadow-indigo-500/20">
-               <Shield className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg font-extrabold tracking-tight text-white uppercase">
-                GigShield <span className="text-zinc-500 font-medium">// Core</span>
-              </h1>
-              <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-                <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 mr-1"></span>
-                Authorized Session: {user.role === 'admin' ? "Insurer_Root" : "Worker_Node"}
-              </div>
-            </div>
-          </div>
+    <main className="min-h-screen bg-zinc-950 text-white selection:bg-indigo-500/30">
+      {/* Dynamic Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/10 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-emerald-500/5 blur-[120px] rounded-full" />
+      </div>
 
-          <div className="flex items-center gap-4">
-             <div className="hidden lg:flex items-center gap-3 px-4 py-2 rounded-2xl bg-zinc-900/50 border border-zinc-800">
-                <div className="h-8 w-8 rounded-full bg-zinc-800 flex items-center justify-center">
-                    <UserIcon className="h-4 w-4 text-zinc-400" />
-                </div>
-                <div className="flex flex-col">
-                    <span className="text-xs font-bold text-white leading-none">{user.name}</span>
-                    <span className="text-[10px] font-medium text-zinc-500 mt-1 uppercase tracking-tighter">{user.platform || "Platform Admin"}</span>
-                </div>
-             </div>
+      <div className="relative z-10 mx-auto max-w-7xl px-8 py-12">
+        <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+          >
+            <h1 className="text-4xl font-black tracking-tight text-white uppercase italic">
+                Control <span className="text-indigo-500 text-3xl not-italic tracking-normal lowercase ml-1">v4.0</span>
+            </h1>
+            <p className="mt-2 text-sm font-medium text-zinc-500 uppercase tracking-widest">
+              {user.role === 'admin' ? "Insurer Management Interface" : `Network Node: ${user.platform} Hub`}
+            </p>
+          </motion.div>
 
-             <button 
-                onClick={handleLogout}
-                className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition-all"
-                title="Logout"
-             >
-                <LogOut className="h-5 w-5" />
-             </button>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto mt-12 max-w-7xl px-8 pb-32">
-        <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-400 mb-2">
-                    <LayoutDashboard className="h-3 w-3" />
-                    Management Console
-                </div>
-                <h2 className="text-3xl font-black text-white tracking-tight">
-                    {user.role === 'admin' ? "Risk & Loss Evaluation" : "Earnings Protection Dashboard"}
-                </h2>
-            </div>
-            
-            <div className="flex items-center gap-3">
+          {user.role === 'admin' && (
+            <motion.div 
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               className="flex bg-zinc-900/50 p-1.5 rounded-2xl border border-zinc-800 backdrop-blur-md"
+            >
                 <button 
-                    onClick={resetSimulation}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-zinc-900 border border-zinc-800 text-xs font-bold uppercase tracking-wider text-zinc-400 hover:bg-zinc-800 hover:text-white transition-all"
+                  onClick={() => setActiveTab("overview")}
+                  className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                    activeTab === 'overview' ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20" : "text-zinc-500 hover:text-white"
+                  }`}
                 >
-                    <RotateCcw className="h-4 w-4" />
-                    Reset Simulation
+                  Market
                 </button>
-                <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-xs font-bold uppercase tracking-wider text-indigo-400">
-                    {user.role === 'admin' ? <ShieldAlert className="h-4 w-4" /> : <Briefcase className="h-4 w-4" />}
-                    SECURE_{(user.role || 'WORKER').toUpperCase()}
-                </div>
-            </div>
+                <button 
+                  onClick={() => setActiveTab("forecast")}
+                  className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                    activeTab === 'forecast' ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20" : "text-zinc-500 hover:text-white"
+                  }`}
+                >
+                  Forecast
+                </button>
+                <button 
+                  onClick={() => setActiveTab("claims")}
+                  className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                    activeTab === 'claims' ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20" : "text-zinc-500 hover:text-white"
+                  }`}
+                >
+                  Underwriting
+                </button>
+            </motion.div>
+          )}
         </div>
 
         <AnimatePresence mode="wait">
@@ -109,26 +106,19 @@ export default function Dashboard() {
             key={user.role}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           >
             {user.role === 'admin' ? (
-              <InsurerDashboard />
+              <InsurerDashboard activeTab={activeTab} />
             ) : (
-              <WorkerDashboard user={user} payouts={payouts} />
+              <WorkerDashboard user={user} payouts={payouts} claims={claims} />
             )}
           </motion.div>
         </AnimatePresence>
-      </main>
+      </div>
 
-      {/* Dev Overlays */}
-      <DevPanel onTrigger={handleDevTrigger} />
-      
-      <PayoutModal 
-        isOpen={modalOpen} 
-        onClose={() => setModalOpen(false)} 
-        breachEvent={currentTrigger.event} 
-        amount={currentTrigger.amount} 
-      />
-    </div>
+      <DevPanel onTrigger={handleManualTrigger} />
+    </main>
   );
 }

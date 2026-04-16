@@ -60,7 +60,7 @@ export default function PaymentPortal({ isOpen, onClose, onSuccess, tierName, am
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-white tracking-tight">Secure Checkout</h3>
-                      <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest text-left">GigShield // Vault v2</p>
+                      <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest text-left">ShiftSafeguard // Vault v2</p>
                     </div>
                   </div>
                   <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors">

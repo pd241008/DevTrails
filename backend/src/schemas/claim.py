@@ -22,3 +22,9 @@ class ClaimAssessmentResponse(BaseModel):
     routing_path: str = Field(..., description="The route taken: 'Green Route' or 'Yellow Route'")
     transaction_id: Optional[str] = Field(None, description="Stripe transaction hash if payout was triggered")
     message: str = Field(..., description="Details regarding the assessment outcome")
+
+class ManualClaimSubmission(BaseModel):
+    worker_id: str
+    description: str
+    image_b64: str
+    amount: float = 500.0
