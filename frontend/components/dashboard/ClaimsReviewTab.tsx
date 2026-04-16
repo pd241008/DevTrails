@@ -101,12 +101,54 @@ export default function ClaimsReviewTab() {
         )}
       </div>
 
-      {/* History Summary */}
-      {claims.filter(c => c.status !== 'pending').length > 0 && (
+      {/* AI Auto-Settled Claims */}
+      {claims.filter(c => c.status === 'approved' && (c.aiScore || 0) > 90).length > 0 && (
+          <div className="mt-12 pt-12 border-t border-zinc-800">
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                    <Zap className="h-5 w-5 text-indigo-400" />
+                    <h3 className="text-xl font-black text-white tracking-tight uppercase italic">Digital Adjudications</h3>
+                </div>
+                <div className="px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em]">
+                    System Settled
+                </div>
+              </div>
+              
+              <div className="grid gap-4 md:grid-cols-2">
+                {claims.filter(c => c.status === 'approved' && (c.aiScore || 0) > 90).map(claim => (
+                    <div key={claim.id} className="premium-card p-6 bg-indigo-500/5 group">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                                <div className="h-8 w-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+                                    <Cpu className="h-4 w-4 text-indigo-400" />
+                                </div>
+                                <div>
+                                    <div className="text-[10px] font-black text-white uppercase">{claim.workerName}</div>
+                                    <div className="text-[8px] font-bold text-zinc-500 uppercase tracking-widest mt-0.5">ID: {claim.id}</div>
+                                </div>
+                            </div>
+                            <div className="text-emerald-400 text-lg font-black tracking-tighter">+₹{claim.amount}</div>
+                        </div>
+                        <div className="text-[10px] text-zinc-400 italic line-clamp-1 mb-4 opacity-60">"{claim.description}"</div>
+                        <div className="flex items-center justify-between pt-4 border-t border-zinc-800/50">
+                            <div className="flex items-center gap-2">
+                                <ShieldCheck className="h-3 w-3 text-emerald-500" />
+                                <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Auto-Approved (90%+ Confidence)</span>
+                            </div>
+                            <span className="text-[8px] font-bold text-zinc-600 uppercase">{new Date(claim.timestamp).toLocaleTimeString()}</span>
+                        </div>
+                    </div>
+                ))}
+              </div>
+          </div>
+      )}
+
+      {/* History Summary (Manual Adjudications Only) */}
+      {claims.filter(c => c.status !== 'pending' && (!c.aiScore || c.aiScore <= 90)).length > 0 && (
          <div className="mt-12 pt-12 border-t border-zinc-800/50">
-            <h4 className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.2em] mb-6">Recent Adjudications</h4>
+            <h4 className="text-[10px] font-bold text-zinc-600 uppercase tracking-[0.2em] mb-6">Recent Manual Adjudications</h4>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {claims.filter(c => c.status !== 'pending').slice(0, 3).map(claim => (
+                {claims.filter(c => c.status !== 'pending' && (!c.aiScore || c.aiScore <= 90)).slice(0, 3).map(claim => (
                     <div key={claim.id} className="premium-card p-4 opacity-60">
                          <div className="flex items-center justify-between mb-3">
                             <span className="text-[10px] font-black text-white">{claim.workerName}</span>
@@ -121,6 +163,7 @@ export default function ClaimsReviewTab() {
             </div>
          </div>
       )}
+
     </div>
   );
 }
