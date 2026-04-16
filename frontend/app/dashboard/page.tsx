@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppContext } from "../context/AppContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,7 +10,7 @@ import InsurerDashboard from "../../components/dashboard/InsurerDashboard";
 import DevPanel from "../../components/DevPanel";
 import { Loader2 } from "lucide-react";
 
-export default function Dashboard() {
+function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, payouts, claims, isHydrated, addNotification } = useAppContext();
@@ -120,5 +120,17 @@ export default function Dashboard() {
 
       <DevPanel onTrigger={handleManualTrigger} />
     </main>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-zinc-950">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 }
