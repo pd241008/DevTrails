@@ -67,17 +67,18 @@ Gig workers operate week-to-week. Monthly models don’t fit their cash flow. Sh
 
 ## 4. The Brain: Two-Stage AI Pipeline
 
-### Stage 1: Fast Path (Millisecond Filtering)
-Redis-backed static rules check:
+### Stage 1: Fast Path (Heuristic + Unsupervised ML)
+Redis-backed static rules and **DBSCAN Clustering** check:
+- **DBSCAN Anomaly Detection**: Clusters GPS pings to identify spatial-temporal "teleportation" or algorithmic spoofing.
 - **OS Mock Location Flag**: Catches simple GPS spoofers.
 - **Emulator Signatures**: Blocks dev-tool driven attacks.
-- **VPN Usage**: Detects IP/Location mismatches.
 
-### Stage 2: Multimodal Ensemble (The "Vote")
-Claims that pass Stage 1 enter our democratic adjudicator:
-- **Visual Stream**: Vision model checks image integrity and pixel-level consistency.
-- **Contextual NLP Stream**: Analyzes description keywords ("flood", "stuck", "closed") against live zone-disruption reports.
+### Stage 2: Multimodal Ensemble (The "Democratic Vote")
+Claims that pass Stage 1 enter our **Multimodal Ensemble AI Pipeline**:
+- **Visual Stream**: Convolutional Vision model checks image integrity and pixel-level consistency.
+- **Contextual NLP Stream**: Analyzes description semantic intent against live zone-disruption reports.
 - **Probabilistic Fusion**: A 50/50 weighted vote resolve both streams into a confidence score (>85% for Green Route).
+- **Decision Logic**: High-confidence claims trigger instant UPI settlement; marginal ones enter "Yellow Route" for human audit.
 
 ---
 
@@ -96,7 +97,7 @@ Triggers are automated, zone-specific, and requiring zero manual filing.
 ## 🛠️ Tech Stack
 - **Frontend**: Next.js 14, Tailwind CSS, Framer Motion.
 - **Backend**: FastAPI (Python), Uvicorn.
-- **ML Engine**: Python, XGBoost, Scikit-learn (DBSCAN + Behavioral Velocity).
+- **ML Engine**: Python, XGBoost, Scikit-learn (DBSCAN + Behavioral Velocity).,OPENWEATHERMAP API
 - **Payments**: Razorpay Mock UPI Integration.
 
 ---
@@ -123,7 +124,7 @@ ShiftSafeguard/
 │   │   ├── api/                  # Routes (Premium, Claims, Triggers)
 │   │   ├── services/             # Core Logic (Ensemble AI, Fraud, Trigger)
 │   │   ├── schemas/              # Pydantic data models
-│   │   └── models/               # XGBoost binary binaries (.ubj)
+│   │   └── models/               # AI Models (Ensemble .joblib & Pricing .pkl)
 │   ├── requirements.txt
 │   └── .env.example
 ├── docs/                         # Technical Specs, Diagrams & PDF Reports
